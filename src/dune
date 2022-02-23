@@ -1,0 +1,10 @@
+(library
+  (public_name petitml)
+  (modules ast printer)
+  (instrumentation
+    (backend bisect_ppx)))
+
+(executable
+  (public_name petitml)
+  (modules petitml)
+  (libraries sedlex petitml))
