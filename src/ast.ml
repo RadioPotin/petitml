@@ -8,5 +8,5 @@ type expression =
   | Var of string
   | Bind of string * expression * expression
   | Abstract of string * expression
-  | Apply of string * expression
+  | Apply of expression * expression
   | If of expression * expression * expression
