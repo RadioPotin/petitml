@@ -1,6 +1,6 @@
 (library
   (public_name petitml)
-  (modules ast printer)
+  (modules ast pp)
   (instrumentation
     (backend bisect_ppx)))
 
