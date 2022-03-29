@@ -3,6 +3,17 @@
 %token <String.t> INT
 %token <String.t> IDENT
 
+%right LET
+%right IN
+%left FUN
+%left ARROW
+%left LPAR
+%left IF
+%left CONSTRUCTOR
+%left INT
+%left IDENT
+%left APPLY_PREC
+
 %start <Ast.program> program
 
 %%
@@ -26,8 +37,8 @@ let expression :=
     <Ast.Bind>
   | FUN; id = IDENT; ARROW; ~ = expression;
     <Ast.Abstract>
-  | LPAR; exp1 = expression; RPAR; LPAR; exp2 = expression; RPAR;
-    <Ast.Apply>
+  | exp1 = expression; exp2 = expression;
+  %prec APPLY_PREC { Ast.Apply (exp1, exp2) }
   | IF; exp1 = expression; THEN; exp2 = expression; ELSE; exp3 = expression; END;
     <Ast.If>
 
