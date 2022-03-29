@@ -8,7 +8,7 @@ let from_lexing =
       let start, stop = Sedlexing.lexing_positions buf in
       (tok, start, stop)
       in
-      try Ok(parse, provide) with
+      try Ok(parse provide) with
       | Menhir_parser.Error -> Error "unexpected token"
       | Lexer.Error (_pos, _msg) -> Error "lexer error"
 

@@ -22,26 +22,26 @@ let int = [%sedlex.regexp? Opt sign, number]
 
 (* identifiers *)
 
-let id = [%sedlex.regexp? 'a'..'z', Opt (Plus('a'..'z' | '_'))]
+let id = [%sedlex.regexp? 'a'..'z', Star ('a'..'z' | '_')]
 
 (* other literals *)
 
-let constructor = [%sedlex.regexp? 'A'..'Z', Opt (Plus('a'..'z' | '_'))]
+let constructor = [%sedlex.regexp? 'A'..'Z', Star ('a'..'z' | '_')]
 
 let rec token buf =
   match%sedlex buf with
   | blank -> token buf
-  | "->" -> ARROW
   | "else" -> ELSE
-  | "=" -> EQUAL
-  | "(" -> LPAR
-  | ")" -> RPAR
   | "then" -> THEN
   | "fun" -> FUN
   | "end" -> END
   | "let" -> LET
   | "in" -> IN
   | "if" -> IF
+  | "(" -> LPAR
+  | ")" -> RPAR
+  | "->" -> ARROW
+  | "=" -> EQUAL
   | id ->
       let id = Utf8.lexeme buf in
       IDENT id

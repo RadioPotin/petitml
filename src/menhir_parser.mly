@@ -23,13 +23,13 @@ let expression :=
   | LPAR; ~ = expression; RPAR; <>
   | ~ = IDENT; <Ast.Var>
   | LET; id = IDENT; EQUAL; exp1 = expression ; IN; exp2 = expression;
-    { Ast.Bind (id, exp1, exp2) }
+    <Ast.Bind>
   | FUN; id = IDENT; ARROW; ~ = expression;
-    { Ast.Abstract (id, expression) }
+    <Ast.Abstract>
   | LPAR; exp1 = expression; RPAR; LPAR; exp2 = expression; RPAR;
-    { Ast.Apply (exp1, exp2) }
+    <Ast.Apply>
   | IF; exp1 = expression; THEN; exp2 = expression; ELSE; exp3 = expression; END;
-    { Ast.If (exp1, exp2, exp3) }
+    <Ast.If>
 
 let program :=
     | ~ = expression; EOF; <>
