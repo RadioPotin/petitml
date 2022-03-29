@@ -8,11 +8,7 @@ exception Error of Lexing.position * string
 
 (* whitespaces *)
 
-let whitespace = [%sedlex.regexp? ' ' | '\t']
-
-let newline = [%sedlex.regexp? '\n' | '\r' | "\r\n"]
-
-let blank = [%sedlex.regexp? whitespace | newline]
+let blank = [%sedlex.regexp?  '\n' | '\r' | "\r\n" | ' ' | '\t']
 
 (* integers *)
 
@@ -20,60 +16,40 @@ let sign = [%sedlex.regexp? '+' | '-']
 
 let digit = [%sedlex.regexp? '0'..'9']
 
-let number = [%sedlex.regexp? '1'..'9', digit]
+let number = [%sedlex.regexp? '0'..'9' | ('1'..'9', Plus digit) ]
 
-let int = [%sedlex.regexp? Opt sign, Plus number]
+let int = [%sedlex.regexp? Opt sign, number]
 
 (* identifiers *)
 
-let allowed_id_chars = [%sedlex.regexp? Plus ('0'..'9' | 'a'..'z' | 'A'.. 'Z' | '_')]
-
-let id = [%sedlex.regexp? Plus allowed_id_chars ]
+let id = [%sedlex.regexp? 'a'..'z', Opt (Plus('a'..'z' | '_'))]
 
 (* other literals *)
 
-let unit = [%sedlex.regexp? "Unit"]
-
-let bool = [%sedlex.regexp? "False" | "True"]
-
+let constructor = [%sedlex.regexp? 'A'..'Z', Opt (Plus('a'..'z' | '_'))]
 
 let rec token buf =
   match%sedlex buf with
   | blank -> token buf
+  | "->" -> ARROW
+  | "else" -> ELSE
+  | "=" -> EQUAL
   | "(" -> LPAR
   | ")" -> RPAR
-  | "=" -> EQUAL
-  | "in" -> IN
-  | "if" -> IF
   | "then" -> THEN
-  | "else" -> ELSE
+  | "fun" -> FUN
   | "end" -> END
   | "let" -> LET
-  | "->" -> ARROW
-  | "fun" -> FUN
-  (*
-  | "_" -> UNDERSCORE
-  | ";" -> SEMICOL
-  | "<" -> LT
-  | ">" -> GT
-  | "<=" -> LE
-  | ">=" -> GE
-  | "&&" -> AND
-  | "||" | "or" -> OR
-  | "xor" -> XOR
-  *)
+  | "in" -> IN
+  | "if" -> IF
   | id ->
       let id = Utf8.lexeme buf in
-      let id = String.sub id 0 (String.length id - 1) in
       IDENT id
   | int ->
       INT (Utf8.lexeme buf)
-  | unit ->
-      UNIT
-  | bool ->
-      let b = Utf8.lexeme buf in
-      let b = String.sub b 0 (String.length b - 1) in
-      BOOL b
+  | constructor ->
+      let c = Utf8.lexeme buf in
+      CONSTRUCTOR c
   | eof -> EOF
   | _ ->
       let position = fst @@ lexing_positions buf in

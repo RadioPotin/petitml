@@ -11,4 +11,4 @@ type expression =
   | Apply of expression * expression
   | If of expression * expression * expression
 
-type program = expression list
+type program = expression

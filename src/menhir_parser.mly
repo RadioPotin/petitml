@@ -1,8 +1,5 @@
-%token LPAR RPAR EQUAL IN FUN LET EOF UNIT ARROW IF THEN ELSE END
-(*
-   UNDERSCORE SEMICOL LT GT LE GE AND OR XOR
-*)
-%token <String.t> BOOL
+%token LPAR RPAR EQUAL IN FUN LET EOF ARROW IF THEN ELSE END
+%token <String.t> CONSTRUCTOR
 %token <String.t> INT
 %token <String.t> IDENT
 
@@ -12,26 +9,27 @@
 
 let literal :=
   | i = INT; {Ast.Int (int_of_string i)}
-  | b = BOOL;
+  | b = CONSTRUCTOR;
   {
     match b with
     | "True" -> Ast.Bool true
     | "False" -> Ast.Bool false
+    | "Unit" -> Ast.Unit
     | _s -> assert false
   }
-    | UNIT; {Ast.Unit}
 
-let expressions :=
+let expression :=
   | ~ = literal; <Ast.Literal>
+  | LPAR; ~ = expression; RPAR; <>
   | ~ = IDENT; <Ast.Var>
-  | LET; id = IDENT; EQUAL; exp1 = expressions ; IN; exp2 = expressions;
+  | LET; id = IDENT; EQUAL; exp1 = expression ; IN; exp2 = expression;
     { Ast.Bind (id, exp1, exp2) }
-  | LPAR; FUN; id = IDENT; ARROW; exp = expressions; RPAR;
-    { Ast.Abstract (id, exp) }
-  | LPAR; exp1 = expressions; RPAR; LPAR; exp2 = expressions; RPAR;
+  | FUN; id = IDENT; ARROW; ~ = expression;
+    { Ast.Abstract (id, expression) }
+  | LPAR; exp1 = expression; RPAR; LPAR; exp2 = expression; RPAR;
     { Ast.Apply (exp1, exp2) }
-  | IF; exp1 = expressions; THEN; exp2 = expressions; ELSE; exp3 = expressions; END;
+  | IF; exp1 = expression; THEN; exp2 = expression; ELSE; exp3 = expression; END;
     { Ast.If (exp1, exp2, exp3) }
 
 let program :=
-    | ~ = nonempty_list(expressions); EOF; <>
+    | ~ = expression; EOF; <>
