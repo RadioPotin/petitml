@@ -10,3 +10,5 @@ type expression =
   | Abstract of string * expression
   | Apply of expression * expression
   | If of expression * expression * expression
+
+type program = expression list

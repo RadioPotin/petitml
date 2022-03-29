@@ -23,3 +23,4 @@
       :with-test
       (>= 2.6)
       :dev))))
+(using menhir 2.1)
