@@ -1,29 +1,49 @@
-let scope_analysis (ast : Ast.program): Ast.program * (string, string) Hashtbl.t=
+module Env = Map.Make (String)
+
+let scope_analysis (ast : Ast.program) : Ast.program =
   let open Ast in
-  let vartbl = Hashtbl.create 2048 in
-  let counter =
-    let cnt = ref (-1)
-    in fun () ->
-      incr cnt;
-      cnt
-    in
-  let rename s =
-    let nb = counter () in
-    s ^ (string_of_int !nb)
-    in
-  let track_var s =
-    match Hashtbl.find_opt vartbl s with
-    | None -> Hashtbl.add vartbl s s; s
-    | Some var ->
-        let key = rename s in
-        Hashtbl.add vartbl key var; key
+  let make_fresh =
+    let seen = Hashtbl.create 32
+    in fun id ->
+      match Hashtbl.find_opt seen id with
+      | None ->
+        Hashtbl.add seen id 0;
+        id ^ "0"
+      | Some nb ->
+        let newid = id ^ string_of_int nb in
+        Hashtbl.add seen id (nb + 1);
+        newid
   in
-  let rec aux = function
+  let rec aux env = function
     | Literal l -> Literal l
-    | Var v -> Var (track_var v)
-    | Bind (s, exp1, exp2) -> Bind (track_var s, aux exp1, aux exp2)
-    | Abstract (s, exp) -> Abstract (track_var s, aux exp)
-    | Apply (exp1, exp2) -> Apply (aux exp1, aux exp2)
-    | If (exp1, exp2, exp3) -> If (aux exp1, aux exp2, aux exp3)
+    | Var s -> begin
+      match Env.find_opt s env with
+      | None -> Var (make_fresh s)
+      | Some id -> Var (id)
+    end
+    | Bind (s, exp1, exp2) -> begin
+      match Env.find_opt s env with
+      | None ->
+          let newid = make_fresh s in
+          let env = Env.add newid s env in
+          Bind (newid, aux env exp1, aux env exp2)
+      | Some _id ->
+          let newid = make_fresh s in
+          let env = Env.add newid s env in
+          Bind (newid, aux env exp1, aux env exp2)
+    end
+    | Abstract (s, exp) -> begin
+      match Env.find_opt s env with
+      | None ->
+          let newid = make_fresh s in
+          let env = Env.add newid s env in
+          Abstract (newid, aux env exp)
+      | Some _id ->
+          let newid = make_fresh s in
+          let env = Env.add newid s env in
+          Abstract (newid, aux env exp)
+    end
+    | Apply (exp1, exp2) -> Apply (aux env exp1, aux env exp2)
+    | If (exp1, exp2, exp3) -> If (aux env exp1, aux env exp2, aux env exp3)
   in
-  aux ast, vartbl
+  aux Env.empty ast

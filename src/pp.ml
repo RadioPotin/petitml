@@ -9,7 +9,7 @@ let literal fmt = function
       Format.fprintf fmt "False"
   | Int i -> Format.fprintf fmt "%d" i
 
-let rec expression fmt (ast: Ast.program) : unit =
+let rec expression fmt (ast : Ast.program) : unit =
   match ast with
   | Literal l -> literal fmt l
   | Var s -> Format.fprintf fmt "%s" s
