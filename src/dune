@@ -1,16 +1,16 @@
 (library
-  (public_name petitml)
-  (modules ast lexer menhir_parser parse pp )
-  (libraries menhirLib sedlex )
-  (preprocess
-    (pps sedlex.ppx))
-  (instrumentation
-    (backend bisect_ppx)))
+ (public_name petitml)
+ (modules ast lexer menhir_parser parse scope_analysis pp)
+ (libraries menhirLib sedlex)
+ (preprocess
+  (pps sedlex.ppx))
+ (instrumentation
+  (backend bisect_ppx)))
 
 (executable
-  (public_name petitml)
-  (modules petitml)
-  (libraries sedlex petitml))
+ (public_name petitml)
+ (modules petitml)
+ (libraries sedlex petitml))
 
 (menhir
-  (modules menhir_parser))
+ (modules menhir_parser))

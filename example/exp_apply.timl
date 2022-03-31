@@ -1,0 +1,3 @@
+let answer = fun i -> i in
+let to_life = 42 in
+answer to_life
