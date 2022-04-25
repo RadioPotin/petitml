@@ -1,4 +1,4 @@
-let usage_analysis (_ast : Ast.program) (_tbl : (string, string) Hashtbl.t) : unit =
+let usage_analysis (_ast : Ast.program) (_env : Env.t) : unit =
   ()
   (*
   let rec aux tbl = function

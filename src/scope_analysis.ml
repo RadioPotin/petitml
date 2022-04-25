@@ -1,8 +1,7 @@
-module Env = Map.Make (String)
+module Scope = Map.Make (String)
 
-let scope_analysis (ast : Ast.program) : Ast.program * ( string, string ) Hashtbl.t =
+let scope_analysis (ast : Ast.program) (environment : Env.t) : Ast.program * Env.t =
   let open Ast in
-  let oldnames = Hashtbl.create 512 in
   let make_fresh =
     let seen = Hashtbl.create 32 in
     fun id ->
@@ -18,21 +17,21 @@ let scope_analysis (ast : Ast.program) : Ast.program * ( string, string ) Hashtb
   let rec aux env = function
     | Literal l -> Literal l
     | Var s -> begin
-      match Env.find_opt s env with
+      match Scope.find_opt s env with
       | None -> failwith @@ Format.sprintf "unbound value %s" s
       | Some id -> Var id
     end
     | Bind (s, exp1, exp2) ->
       let s' = make_fresh s in
-      let env' = Env.add s s' env in
-      Hashtbl.add oldnames s' s;
+      let env' = Scope.add s s' env in
+      Hashtbl.add environment.old_names s' s;
       Bind (s', aux env exp1, aux env' exp2)
     | Abstract (s, exp) ->
       let s' = make_fresh s in
-      let env' = Env.add s s' env in
-      Hashtbl.add oldnames s' s;
+      let env' = Scope.add s s' env in
+      Hashtbl.add environment.old_names s' s;
       Abstract (s', aux env' exp)
     | Apply (exp1, exp2) -> Apply (aux env exp1, aux env exp2)
     | If (exp1, exp2, exp3) -> If (aux env exp1, aux env exp2, aux env exp3)
   in
-  (aux Env.empty ast, oldnames)
+  (aux Scope.empty ast, environment)

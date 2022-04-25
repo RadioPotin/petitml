@@ -3,5 +3,5 @@ type t = {
 }
 
 let empty () = {
-  old_names = Hashbl.create 512;
+  old_names = Hashtbl.create 512;
 }
