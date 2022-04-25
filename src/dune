@@ -1,6 +1,6 @@
 (library
  (public_name petitml)
- (modules ast lexer menhir_parser parse scope_analysis pp)
+ (modules ast lexer menhir_parser parse scope_analysis usage_analysis env pp)
  (libraries menhirLib sedlex)
  (preprocess
   (pps sedlex.ppx))

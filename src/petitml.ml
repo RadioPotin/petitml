@@ -6,6 +6,7 @@ let () =
   | Ok prog ->
     let fmt = Format.std_formatter in
     Format.fprintf fmt "%a@\n" Petitml.Pp.expression prog;
-    let prog = Petitml.Scope_analysis.scope_analysis prog in
-    Format.fprintf fmt "Transformed:@\n%a@\n" Petitml.Pp.expression prog
+    let prog, tbl = Petitml.Scope_analysis.scope_analysis prog in
+    Format.fprintf fmt "Transformed:@\n%a@\n" Petitml.Pp.expression prog;
+    Petitml.Usage_analysis.usage_analysis prog tbl
   | Error mess -> Format.printf "%s" mess
