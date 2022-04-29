@@ -14,24 +14,24 @@ let scope_analysis (ast : Ast.program) (environment : Env.t) : Ast.program * Env
         Hashtbl.add seen id (nb + 1);
         newid
   in
-  let rec aux env = function
+  let rec aux scope = function
     | Literal l -> Literal l
     | Var s -> begin
-      match Scope.find_opt s env with
+      match Scope.find_opt s scope with
       | None -> failwith @@ Format.sprintf "unbound value %s" s
       | Some id -> Var id
     end
     | Bind (s, exp1, exp2) ->
       let s' = make_fresh s in
-      let env' = Scope.add s s' env in
+      let scope' = Scope.add s s' scope in
       Hashtbl.add environment.old_names s' s;
-      Bind (s', aux env exp1, aux env' exp2)
+      Bind (s', aux scope exp1, aux scope' exp2)
     | Abstract (s, exp) ->
       let s' = make_fresh s in
-      let env' = Scope.add s s' env in
+      let scope' = Scope.add s s' scope in
       Hashtbl.add environment.old_names s' s;
-      Abstract (s', aux env' exp)
-    | Apply (exp1, exp2) -> Apply (aux env exp1, aux env exp2)
-    | If (exp1, exp2, exp3) -> If (aux env exp1, aux env exp2, aux env exp3)
+      Abstract (s', aux scope' exp)
+    | Apply (exp1, exp2) -> Apply (aux scope exp1, aux scope exp2)
+    | If (exp1, exp2, exp3) -> If (aux scope exp1, aux scope exp2, aux scope exp3)
   in
   (aux Scope.empty ast, environment)
